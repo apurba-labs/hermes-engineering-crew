@@ -1,21 +1,39 @@
 # Hermes Engineering Crew
 
-Multi-agent AI engineering assistant powered by Hermes orchestration.
+Hermes Engineering Crew is a multi-agent AI engineering assistant that analyzes GitHub repositories using specialized engineering agents coordinated by a Hermes orchestrator.
 
 ## Features
 
-- GitHub repository analysis
-- Security scanning
-- Multi-agent workflow
+- GitHub repository ingestion
+- Security analysis agent
+- Hermes orchestration workflow
 - Structured engineering reports
+- Async FastAPI backend
 
-## Stack
+## Architecture
 
-- FastAPI
+User Repo
+→ Hermes Orchestrator
+→ Specialized Engineering Agents
+→ Final Engineering Report
+
+## Current MVP
+
+- GitHub Loader ✅
+- Security Agent ✅
+- Hermes Orchestrator ✅
+- Structured Report Schema ✅
+
+## Tech Stack
+
 - Python
-- Hermes
-- Gemma
+- FastAPI
+- AsyncIO
+- Hermes-style orchestration
+- Gemma-ready architecture
 
-## Status
+## Run Locally
 
-Early MVP
+```bash
+pip install -r requirements.txt
+uvicorn app.main:app --reload
