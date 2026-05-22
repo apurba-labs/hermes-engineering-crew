@@ -1,6 +1,6 @@
 import httpx
 from typing import Dict, List
-
+from app.core.config import settings
 # Broadened extension tracking parameters matching your setup profile
 SUPPORTED_EXTENSIONS = (
     ".py",
@@ -18,7 +18,7 @@ SUPPORTED_EXTENSIONS = (
 class GitHubLoader:
     def __init__(self):
         self.timeout = 20.0
-        self.max_files = 30
+        self.max_files = settings.MAX_REPO_FILES
 
     async def fetch_repository_contents(self, repo_url: str) -> Dict[str, str]:
         """
