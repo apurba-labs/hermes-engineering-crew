@@ -1,47 +1,54 @@
 import httpx
+import os
+import time
+import logging
 from typing import Dict, List
 from app.core.config import settings
-# Broadened extension tracking parameters matching your setup profile
-SUPPORTED_EXTENSIONS = (
-    ".py",
-    ".js",
-    ".ts",
-    ".tsx",
-    ".jsx",
-    ".php",
-    ".go",
-    ".java",
-    ".rs",
-    ".md",
-)
+
+logger = logging.getLogger("hermes.services.github")
 
 class GitHubLoader:
     def __init__(self):
         self.timeout = 20.0
         self.max_files = settings.MAX_REPO_FILES
+        self.supported_extensions = settings.SUPPORTED_EXTENSIONS
+        
+        # Bring in your corporate github token from system variables if available
+        self.github_token = settings.GITHUB_TOKEN
 
     async def fetch_repository_contents(self, repo_url: str) -> Dict[str, str]:
-        """
-        Extracts repository signatures and instantiates a recursive
-        asynchronous walk across nested system scopes.
-        """
+        # Start timer for GitHub downloads
+        start_time = time.perf_counter()
+        
         repo_path = self.extract_repo_path(repo_url)
         files_payload = {}
 
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
+        # Inject the mandatory headers directly into the base client layout
+        headers = {
+            "User-Agent": "Gotihub-Hermes-Orchestrator-Engine/1.0",
+            "Accept": "application/vnd.github.v3+json"
+        }
+        
+        # Authenticate if a token exists to unlock 5,000 requests per hour
+        if self.github_token:
+            headers["Authorization"] = f"token {self.github_token}"
+            logger.info("[GitHubLoader] Outbound authorization token loaded successfully.")
+
+        async with httpx.AsyncClient(timeout=self.timeout, headers=headers) as client:
             await self.walk_contents(
                 client=client,
                 repo_path=repo_path,
                 path="",
                 files_payload=files_payload,
             )
-
+            
+        # Stop timer and calculate total download duration
+        elapsed = time.perf_counter() - start_time
+        print(f"\n[TELEMETRY] GitHubLoader fetched {len(files_payload)} files in {elapsed:.2f} seconds.")
+        
         return files_payload
 
     def extract_repo_path(self, repo_url: str) -> str:
-        """
-        Sanitizes trailing strings and extracts ownership keys.
-        """
         parts = repo_url.rstrip("/").split("github.com/")
         if len(parts) < 2:
             raise ValueError("Invalid GitHub repository URL configuration.")
@@ -54,21 +61,20 @@ class GitHubLoader:
         path: str,
         files_payload: Dict[str, str],
     ):
-        # Defensive termination if boundary cap parameters are matched
         if len(files_payload) >= self.max_files:
             return
 
-        # Ensure safe character encoding over deep directory structures
         api_url = f"https://api.github.com/repos/{repo_path}/contents/{path}"
         
         try:
             response = await client.get(api_url)
+            
+            # Better visibility: Log problems instead of dropping out silently
             if response.status_code != 200:
+                logger.error(f"[GitHubLoader Error] Target node returned status: {response.status_code} for path: '{path}'")
                 return
                 
             contents = response.json()
-            
-            # If the response isn't a directory array list block, safely drop back
             if not isinstance(contents, list):
                 return
 
@@ -78,7 +84,6 @@ class GitHubLoader:
 
                 item_type = item.get("type")
 
-                # Handle Nested Subdirectory Blocks
                 if item_type == "dir":
                     await self.walk_contents(
                         client=client,
@@ -87,11 +92,11 @@ class GitHubLoader:
                         files_payload=files_payload,
                     )
 
-                # Process Target Core File Buffers
                 elif item_type == "file":
                     file_name = item.get("name", "")
                     
-                    if not file_name.endswith(SUPPORTED_EXTENSIONS):
+                    # Target extensions verify pass
+                    if not file_name.endswith(self.supported_extensions):
                         continue
 
                     download_url = item.get("download_url")
@@ -100,10 +105,8 @@ class GitHubLoader:
 
                     file_response = await client.get(download_url)
                     if file_response.status_code == 200:
-                        # Slice content strictly to safely guard context horizons
                         files_payload[item["path"]] = file_response.text[:15000]
 
         except Exception as e:
-            # Prevent single file tracking failures from stalling the entire agent crew workflow
-            print(f"[GitHubLoader Warning] Bypassing structural node layout exception: {str(e)}")
+            logger.warning(f"[GitHubLoader Warning] Bypassing structural node layout exception: {str(e)}")
             return
