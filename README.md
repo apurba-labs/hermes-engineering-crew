@@ -1,65 +1,128 @@
-# Hermes Engineering Crew
+# Hermes Engineering Crew — Engineering Workflow Intelligence
 
-Hermes Engineering Crew is a multi-agent AI engineering assistant that analyzes GitHub repositories using collaborative AI agents powered by local Gemma models through Ollama.
+🌐 Live Demo: https://crew.gotihub.com/
 
-Built with FastAPI, Next.js, and Hermes-style orchestration workflows.
+🏢 Main Platform: https://gotihub.com/
+
+Built with FastAPI, Next.js, Ollama, Gemma, and Hermes-inspired orchestration workflows.
+
+---
+
+# Overview
+
+Hermes Engineering Crew is a multi-agent AI engineering platform that analyzes GitHub repositories using collaborative AI agents coordinated through a Hermes-inspired orchestration workflow.
+
+Instead of treating AI as a single assistant or chatbot, Hermes Engineering Crew treats software engineering as a collaborative workflow between specialized AI agents.
+
+Each agent focuses on a dedicated engineering responsibility:
+
+- Security Analysis
+- Architecture Review
+- Engineering Planning
+- Final Synthesis Orchestration
+
+The goal is not AI chat.
+
+The goal is engineering workflow intelligence.
 
 ---
 
 # Features
 
 - GitHub repository ingestion
-- AI-powered security analysis
-- Architecture review agent
-- Engineering roadmap generation
 - Multi-agent orchestration workflow
-- Local AI inference using Gemma + Ollama
+- AI-powered security analysis
+- Repository architecture review
+- Engineering roadmap generation
+- Async concurrent agent execution
+- Hermes-style synthesis layer
+- Telemetry-driven orchestration visibility
+- Local AI inference using Ollama
+- Optional GitHub token support
 - Modern Next.js dashboard
 - Structured engineering reports
+- Live production deployment
 
 ---
 
-# Orchestration Philosophy
+# Multi-Agent Orchestration Pipeline
 
-Hermes Engineering Crew follows a Hermes-inspired orchestration model where specialized AI agents collaborate through a central orchestrator to analyze repositories, synthesize findings, and generate engineering recommendations.
+![Hermes Workflow](./screenshots/hermes-workflow.png)
 
 ---
 
-# Architecture
+# Engineering Workflow Intelligence
+
+Hermes Engineering Crew explores a different direction for AI systems.
+
+Instead of treating AI as a standalone assistant, the platform coordinates specialized AI agents through a centralized orchestration layer.
+
+Each agent focuses on a narrow engineering responsibility while the Hermes Orchestrator manages execution flow, report aggregation, and synthesis.
+
+This creates a collaborative engineering workflow rather than isolated prompt-response interactions.
+
+---
+
+# AI Agents
+
+## Security Analyst Node
+
+Analyzes:
+- hardcoded secrets
+- insecure configurations
+- authentication risks
+- dangerous code patterns
+
+---
+
+## Architecture Agent
+
+Reviews:
+- repository structure
+- modularity
+- engineering organization
+- architectural consistency
+
+---
+
+## Planning Agent
+
+Generates:
+- engineering roadmap
+- technical priorities
+- next-step recommendations
+- optimization opportunities
+
+---
+
+# Real-Time Telemetry Pipeline
+
+Hermes Engineering Crew exposes orchestration telemetry during execution to make multi-agent workflows transparent and observable.
+
+Example runtime telemetry:
 
 ```text
-GitHub Repository
-        ↓
-GitHub Loader Service
-        ↓
-Hermes Orchestrator
-        ↓
-Security Agent
-Architecture Agent
-Planning Agent
-        ↓
-Final Engineering Report
+[TELEMETRY] GitHubLoader fetched 8 files in 5.91 seconds.
+
+[Orchestrator] Starting Full Pipeline for repository analysis...
+
+[TELEMETRY] Stage 1 (Security + Architecture Agents) took 218.68 seconds.
+
+[TELEMETRY] Stage 2 (Planning Agent Execution) took 72.19 seconds.
+
+[TELEMETRY] Stage 3 (Hermes Master Synthesis API Call) took 120.18 seconds.
+
+[TELEMETRY] Pipeline Complete! Total Runtime: 411.05 seconds.
 ```
 
----
-
-# Orchestration Philosophy
-
-Hermes Engineering Crew follows a Hermes-inspired orchestration model where specialized AI agents collaborate through a central orchestrator to analyze repositories, synthesize findings, and generate engineering recommendations.
-
-Each agent is responsible for a focused engineering domain:
-
-- Security Analysis
-- Architecture Review
-- Engineering Planning
-
-The Hermes Orchestrator coordinates agent execution and aggregates structured reports into a unified engineering analysis workflow.
+This visibility helps developers understand orchestration timing, model execution latency, and AI workflow coordination behavior.
 
 ---
 
 # Tech Stack
 
 ## Backend
+
 - FastAPI
 - Python
 - AsyncIO
@@ -67,10 +130,35 @@ The Hermes Orchestrator coordinates agent execution and aggregates structured re
 - Gemma 3
 - Hermes-inspired orchestration architecture
 
+---
+
 ## Frontend
+
 - Next.js
 - TypeScript
 - TailwindCSS
+- Lucide React
+
+---
+
+# Production Deployment
+
+Hermes Engineering Crew is deployed using Docker-based infrastructure with isolated frontend, backend, and AI inference layers.
+
+Production stack includes:
+
+- Docker
+- Nginx reverse proxy
+- Ollama inference server
+- FastAPI backend
+- Next.js frontend
+- Multi-subdomain routing
+
+Live Production URLs:
+
+- https://gotihub.com/
+- https://agl.gotihub.com/
+- https://crew.gotihub.com/
 
 ---
 
@@ -82,7 +170,8 @@ The Hermes Orchestrator coordinates agent execution and aggregates structured re
 4. Security risks are identified
 5. Architecture review is generated
 6. Planning Agent creates engineering roadmap
-7. Dashboard displays structured reports
+7. Hermes synthesis layer aggregates findings
+8. Dashboard displays structured engineering reports
 
 ---
 
@@ -93,11 +182,19 @@ The Hermes Orchestrator coordinates agent execution and aggregates structured re
 ![Dashboard](./screenshots/dashboard.png)
 
 ---
+
 ## Loading State
 
-![API Response](./screenshots/loading-state.png)
+![Loading State](./screenshots/loading-state.png)
 
 ---
+
+## Telemetry Console
+
+![Telemetry](./screenshots/telemetry.png)
+
+---
+
 ## Multi-Agent API Response
 
 ![API Response](./screenshots/api-response.png)
@@ -110,29 +207,6 @@ The Hermes Orchestrator coordinates agent execution and aggregates structured re
 
 ---
 
-# AI Agents
-
-## Security Analyst Node
-Analyzes:
-- hardcoded secrets
-- insecure configurations
-- authentication risks
-- dangerous patterns
-
-## Architecture Agent
-Reviews:
-- repository structure
-- modularity
-- engineering organization
-
-## Planning Agent
-Generates:
-- engineering roadmap
-- technical priorities
-- next-step recommendations
-
----
-
 # Local AI Inference
 
 Hermes Engineering Crew uses:
@@ -140,7 +214,7 @@ Hermes Engineering Crew uses:
 - Ollama
 - Gemma 3 (1B)
 
-for lightweight local inference and privacy-focused AI orchestration.
+for lightweight local inference and privacy-focused AI orchestration workflows.
 
 ---
 
@@ -150,7 +224,10 @@ for lightweight local inference and privacy-focused AI orchestration.
 cd backend
 
 python -m venv venv
+
 source venv/bin/activate
+# Windows:
+# venv\Scripts\activate
 
 pip install -r requirements.txt
 
@@ -210,25 +287,8 @@ MAX_FILE_CONTENT_LENGTH=800
 
 ---
 
-# Screenshots
-
-## Swagger API Response
-
-- Multi-agent engineering reports
-- AI-powered security analysis
-- Architecture review workflow
-
-## Dashboard UI
-
-- Repository input interface
-- Agent orchestration visualization
-- Structured AI report cards
-
----
-
 # Project Status
 
-Current Phase:
 - GitHub Loader ✅
 - AI Security Agent ✅
 - Architecture Agent ✅
@@ -236,12 +296,31 @@ Current Phase:
 - Hermes Orchestrator ✅
 - Next.js Dashboard ✅
 - Local Gemma Inference ✅
+- Real-Time Telemetry UI ✅
+- Docker Deployment ✅
+- Live Production Deployment ✅
 
 ---
 
 # Vision
 
 Hermes Engineering Crew explores collaborative AI engineering workflows where specialized AI agents work together to analyze, review, and improve software repositories.
+
+The project focuses on orchestration transparency, engineering workflow intelligence, and practical multi-agent system design.
+
+---
+
+# Support The Project
+
+If you find Hermes Engineering Crew interesting, helpful, or inspiring, consider supporting the project by starring the repository.
+
+⭐ GitHub Repository:
+https://github.com/apurba-labs/gotihub-hermes-crew
+
+🌐 Live Demo:
+https://crew.gotihub.com/
+
+Your support helps us continue exploring engineering workflow intelligence, multi-agent orchestration systems, and practical AI engineering infrastructure.
 
 ---
 
