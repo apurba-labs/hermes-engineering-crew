@@ -68,18 +68,23 @@ class GitHubLoader:
         if len(files_payload) >= self.max_files:
             return
         
+        # TELEMETRY CHECK: See exactly what settings the loader is using
+        print(f"🔍 [DEBUG] Loader Extensions Constraint Check: {self.supported_extensions} (Type: {type(self.supported_extensions)})")
+        
         contents = None
         # THE REFIX MATRIX: Attempt branches sequentially without crashing on 404
         for branch in ["main", "master"]:
             api_url = f"https://api.github.com/repos/{repo_path}/contents/{path}?ref={branch}"
             try:
                 response = await client.get(api_url)
+                print(f"[DEBUG] Trying Branch: {branch} for path '{path}' -> Status Code: {response.status_code}")
                 if response.status_code == 200:
                     contents = response.json()
                     if isinstance(contents, list):
+                        print(f"[DEBUG] Locked onto Active Branch: {branch}")
                         break  # Found the active branch layout! Break out of branch loop.
                 else:
-                    logger.debug(f"[GitHubLoader Branch Check] Branch '{branch}' returned status code: {response.status_code}")
+                    print(f"[DEBUG] GitHub API Response: {response.text[:300]}")
             except httpx.HTTPStatusError as http_err:
                 logger.debug(f"[GitHubLoader Branch Check] Branch '{branch}' failed with HTTP error: {http_err}")
             except Exception as e:
