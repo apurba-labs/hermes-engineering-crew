@@ -19,71 +19,54 @@ export default function Home() {
   const [telemetryLogs, setTelemetryLogs] = useState<string[]>([]);
 
   const analyzeRepository = async () => {
+  if (!repoUrl) return;
 
-    if (!repoUrl) return;
+  setLoading(true);
+  
+  // Initialize logs instantly
+  setTelemetryLogs([
+    "[SYSTEM] Initializing Hermes Engineering Crew...",
+    "[TELEMETRY] Connecting to GitHub repository...",
+  ]);
 
-    setLoading(true);
-    setTelemetryLogs([
-      "[SYSTEM] Initializing Hermes Engineering Crew...",
-      "[TELEMETRY] Connecting to GitHub repository...",
+  // Set up parallel simulated steps on separate staggered interval tracks
+  const simulationTimers = [
+    setTimeout(() => setTelemetryLogs(prev => [...prev, "[TELEMETRY] GitHubLoader indexed repository structure."]), 800),
+    setTimeout(() => setTelemetryLogs(prev => [...prev, "[TELEMETRY] Stage 1: SecurityAgent + ArchitectureAgent launched."]), 1800),
+    setTimeout(() => setTelemetryLogs(prev => [...prev, "[TELEMETRY] asyncio.gather synchronization complete."]), 2800),
+    setTimeout(() => setTelemetryLogs(prev => [...prev, "[TELEMETRY] PlanningAgent roadmap synthesis initialized."]), 3800),
+  ];
+
+  try {
+    // Fire the API call concurrently with the running animations
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/analyze-repo`,
+      { 
+        repo_url: repoUrl, 
+        github_token: githubToken, 
+      }
+    );
+
+    // Clean up any remaining animation timers if the API completes incredibly fast
+    simulationTimers.forEach(clearTimeout);
+
+    // Append final real success status logs instantly alongside the data payload
+    setTelemetryLogs(prev => [
+      ...prev,
+      "[TELEMETRY] Hermes executive synthesis layer completed.",
+      "[SYSTEM] Analysis report compiled successfully."
     ]);
+    setReport(response.data);
 
-    try {
+  } catch (error) {
+    console.error(error);
+    simulationTimers.forEach(clearTimeout);
+    setTelemetryLogs(prev => [...prev, "[ERROR] Analysis pipeline halted unexpectedly."]);
+  } finally {
+    setLoading(false);
+  }
+};
 
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/analyze-repo`,
-        {
-          repo_url: repoUrl,
-          github_token: githubToken,
-        }
-      );
-
-      setTimeout(() => {
-        setTelemetryLogs(prev => [
-          ...prev,
-          "[TELEMETRY] GitHubLoader indexed repository structure.",
-        ]);
-      }, 1500);
-
-      setTimeout(() => {
-        setTelemetryLogs(prev => [
-          ...prev,
-          "[TELEMETRY] Stage 1: SecurityAgent + ArchitectureAgent launched.",
-        ]);
-      }, 3000);
-
-      setTimeout(() => {
-        setTelemetryLogs(prev => [
-          ...prev,
-          "[TELEMETRY] asyncio.gather synchronization complete.",
-        ]);
-      }, 6000);
-
-      setTimeout(() => {
-        setTelemetryLogs(prev => [
-          ...prev,
-          "[TELEMETRY] PlanningAgent roadmap synthesis initialized.",
-        ]);
-      }, 9000);
-
-      setTimeout(() => {
-        setTelemetryLogs(prev => [
-          ...prev,
-          "[TELEMETRY] Hermes executive synthesis layer completed.",
-        ]);
-      }, 12000);
-
-      setReport(response.data);
-
-    } catch (error) {
-
-      console.error(error);
-
-    } finally {
-
-      setLoading(false);
-    }
-  };
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-black via-zinc-950 to-zinc-900 text-white p-8">
