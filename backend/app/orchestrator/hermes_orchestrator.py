@@ -33,54 +33,42 @@ class HermesOrchestrator:
 
     async def run_analysis(self, repo_url: str, repository_files: Dict[str, str]) -> Dict[str, Any]:
         """
-        Gathers analysis from Security and Architecture agents concurrently, passes summaries 
-        to Planning, and then executes final Managerial synthesis via the Hermes Master model.
-        Optimized to use overlapping async execution blocks while preserving pristine stage telemetry.
+        Gathers analysis from Security and Architecture agents sequentially to prevent hardware thread 
+        contention, leverages cached context pools, and finalizes via the Hermes Master model.
         """
         total_start = time.perf_counter()
-        print(f"\n[Orchestrator] Starting Optimized Full Pipeline for {repo_url}...")
+        print(f"\n[Orchestrator] Starting Hardened Optimization Pipeline for {repo_url}...")
         
         # ---------------------------------------------------------
-        # STAGE 1: CONCURRENT WORKER EXECUTION (Security & Architecture)
+        # STAGE 1: HARDENED THROUGHPUT EXECUTION (Security followed by Architecture)
         # ---------------------------------------------------------
         stage1_start = time.perf_counter()
         
-        # We spawn the background tasks immediately
-        security_task = asyncio.create_task(self.security_agent.analyze(repository_files))
-        architecture_task = asyncio.create_task(self.architecture_agent.analyze(repository_files))
+        #  Execute sequentially to eliminate hardware-level context switching contention
+        print("[Orchestrator] Processing Stage 1A: Security Agent Node...")
+        sec_report = await self.security_agent.analyze(repository_files)
         
-        # Define an internal task for Stage 2 that monitors prerequisites cleanly
-        async def execute_dependent_planning():
-            # Awaiting the background futures inside the dependency wrapper
-            sec_res, arch_res = await asyncio.gather(security_task, architecture_task)
-            
-            # ---------------------------------------------------------
-            # STAGE 2: DEPENDENT STRATEGIC PLANNING
-            # ---------------------------------------------------------
-            stage2_start = time.perf_counter()
-            
-            p_report = await self.planning_agent.analyze(
-                security_summary=sec_res.summary,
-                architecture_summary=arch_res.summary
-            )
-            
-            stage2_elapsed = time.perf_counter() - stage2_start
-            print(f"[TELEMETRY] Stage 2 (Planning Agent Execution) took {stage2_elapsed:.2f} seconds.")
-            return sec_res, arch_res, p_report
-
-        # Kick off the combined execution pipeline task
-        pipeline_wrapper = asyncio.create_task(execute_dependent_planning())
+        print("[Orchestrator] Processing Stage 1B: Architecture Agent Node (Leveraging Warm Cache)...")
+        arch_report = await self.architecture_agent.analyze(repository_files)
         
-        # Wait for workers to finish so we can print Stage 1 metrics exactly on time
-        sec_report, arch_report = await asyncio.gather(security_task, architecture_task)
         stage1_elapsed = time.perf_counter() - stage1_start
         print(f"[TELEMETRY] Stage 1 (Security + Architecture Agents) took {stage1_elapsed:.2f} seconds.")
-
-        # Resolve the remaining pipeline state to capture the planning agent report
-        _, _, plan_report = await pipeline_wrapper
-
+    
         # ---------------------------------------------------------
-        # STAGE 3: MASTER SYNTHESIS AGGREGATION (Hermes Master Manager)
+        # STAGE 2: DEPENDENT STRATEGIC PLANNING
+        # ---------------------------------------------------------
+        stage2_start = time.perf_counter()
+        
+        plan_report = await self.planning_agent.analyze(
+            security_summary=sec_report.summary,
+            architecture_summary=arch_report.summary
+        )
+        
+        stage2_elapsed = time.perf_counter() - stage2_start
+        print(f"[TELEMETRY] Stage 2 (Planning Agent Execution) took {stage2_elapsed:.2f} seconds.")
+        
+        # ---------------------------------------------------------
+        # STAGE 3: MASTER SYNTHESIS AGGREGATION
         # ---------------------------------------------------------
         stage3_start = time.perf_counter()
         
@@ -113,7 +101,7 @@ Score: {plan_report.score}
                     )
                 }
             ],
-            "format": "json", 
+            "format": "json",
             "stream": False
         }
         
